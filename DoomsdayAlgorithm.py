@@ -10,6 +10,22 @@ def check_leap_year(year):
                 return 1
             else:
                 return 0
+            
+def get_anchor_day(year):
+    century = int(year[:2])
+    anchor_days = {0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',
+                   4:'Thursday',5:'Friday',6:'Saturday'}
+    this_anchor_day = (5*(century % 4)+2)%7
+    return(anchor_days[this_anchor_day])
+
+def construct_days_of_week(anchor_day):
+    days_of_week = {}
+    anchor_index = week_days.index(anchor_day)
+    new_days = list_reshuffle(week_days,anchor_index)
+    for i in range(7):
+        days_of_week.update({i:new_days[i]})
+    return(days_of_week)
+    
 
 def this_doomsday(year):
     if check_leap_year(year) == 1:
@@ -52,10 +68,14 @@ def distance_from_doomday(day,month,year):
 
     if month=='01':
         days_to_end_jan = 31-int(day)
-        days_to_doomsday = days_to_end_jan + int(days_in_month['02'])+1
+        days_to_doomsday = days_to_end_jan + int(days_in_month['02'])
+        print(days_to_doomsday)
+        print(days_to_doomsday % 7)
         return days_to_doomsday
     elif month=='02':
         days_to_doomsday = int(days_in_month['02']) - int(day)
+        print(days_to_doomsday)
+        print(days_to_doomsday % 7)
         return days_to_doomsday
     else:
         #Thin down dictionary to only relevant months
@@ -69,11 +89,17 @@ def distance_from_doomday(day,month,year):
                 break
             else:
                 new_days_in_month.update({months:days_in_month[months]})
-        days_to_doomsday += int(day) + sum([new_days_in_month[month] for month in new_days_in_month])+3
+        days_to_doomsday += int(day) + sum([new_days_in_month[month] for month in new_days_in_month])
         
         print(days_to_doomsday)
         return days_to_doomsday
                 
+def list_reshuffle(input_list,index):
+    pre_index, post_index = input_list[:index], input_list[index:]
+    #print(pre_index, post_index)
+    new_days_order = post_index+pre_index
+    return new_days_order
+        
     
             
 def day_from_days():
@@ -88,8 +114,7 @@ def day_from_days():
 #Mar-Dec, leap year. Fails
         
         
-print(64%7)
-input_date = '01/04/2004'
+input_date = '12/12/2005'
 
 day = input_date[:2]
 month = input_date[3:5]
@@ -107,21 +132,18 @@ days_in_month = {"01":31,
                  "10":31,
                  "11":30,
                  "12":31}
-days_of_week = {0:'Friday',
-                1:'Saturday',
-                2:'Sunday',
-                3:'Monday',
-                4:'Tuesday',
-                5:'Wednesday',
-                6:'Thursday'}
+this_anchor_day = get_anchor_day(year)
+week_days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+days_of_week = construct_days_of_week(this_anchor_day)
+
 
     
 #print(distance_from_doomday(day,month,year))
-print(day_from_days())
+
 
 ##for days in days_in_month:
 ##    print(days)
-
+#print(get_anchor_day(year))
 
 ##new_days = {}
 ##for days in days_in_month:
@@ -131,7 +153,10 @@ print(day_from_days())
 
 #print([days_in_month[days] for days in days_in_month)
 
+day_from_days()
 
+#Issue seems to be something to do with how it is calculating the day of the week
+#based off the days between the given date and doomsday
 
 
 
