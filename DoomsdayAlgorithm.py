@@ -1,128 +1,48 @@
-def check_leap_year(year):
-    year_ = int(year)
-    if year_ % 4 != 0:
-        return 0
-    else:
-        if year_ % 100 != 0:
-            return 1
-        else:
-            if year_ % 400 == 0:
-                return 1
-            else:
-                return 0
-            
 def get_anchor_day(year):
     century = int(year[:2])
     anchor_days = {0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',
                    4:'Thursday',5:'Friday',6:'Saturday'}
-    this_anchor_day = (5*(century % 4)+2)%7
-    return(anchor_days[this_anchor_day])
+    #doomsday_offset = floor(century/12) + (century % 12) + floor( (century % 12)/4)
+    this_anchor_day = ((5*(century % 4))%7 +2)%7
+    return this_anchor_day
 
-def construct_days_of_week(anchor_day):
-    days_of_week = {}
-    anchor_index = week_days.index(anchor_day)
-    new_days = list_reshuffle(week_days,anchor_index)
-    for i in range(7):
-        days_of_week.update({i:new_days[i]})
-    return(days_of_week)
-    
+def get_this_years_doomsday(year):
+    tens_year = int(year[2:])
+    q1 = tens_year//12
+    r1 = tens_year %12
+    q2 = r1 // 4
+    total = q1 +r1 +q2 + get_anchor_day(year)
+    return total % 7
 
-def this_doomsday(year):
-    if check_leap_year(year) == 1:
-        return '29/02/'+str(year)
+def check_leap_year_correction(year):
+    year_ = int(year)
+    if year_ % 4 != 0:
+        return 28
     else:
-        return '28/02/'+str(year)
-
-##def distance_from_doomday(day,month,year):
-##    days_to_doomsday = 0
-##
-##    for days in days_in_month:
-##
-##        if days == '01' and month=='01':
-##            days_to_doomsday += int(days_in_month['02']) + (int(days_in_month[month])-int(day))
-##            return days_to_doomsday
-##
-##        else:
-##            #We need to thin the dictionary down to only days we want
-##            new_days_in_month = {}
-##            for days in days_in_month:
-##                if days != '01' and int(days) <= int(month):
-##                    new_days_in_month.update({days:days_in_month[days]})
-##            #We want to get the number of days between the given date and doomsday
-##
-##            #Case for if the given date is in February
-##            if month == "02":
-##                days_to_doomsday = int(this_doomsday(year)[:2]) - int(day)
-##                return days_to_doomsday
-##            new_days_in_month.pop(month)
-##            new_days_in_month.pop("02")
-##
-##            for days_ in new_days_in_month:
-##                days_to_doomsday+= new_days_in_month[days_]
-##            days_to_doomsday += int(day)+1
-##            
-##            return days_to_doomsday
-
-def distance_from_doomday(day,month,year):
-    days_to_doomsday = 0
-
-    if month=='01':
-        days_to_end_jan = 31-int(day)
-        days_to_doomsday = days_to_end_jan + int(days_in_month['02'])
-        print(days_to_doomsday)
-        print(days_to_doomsday % 7)
-        return days_to_doomsday
-    elif month=='02':
-        days_to_doomsday = int(days_in_month['02']) - int(day)
-        print(days_to_doomsday)
-        print(days_to_doomsday % 7)
-        return days_to_doomsday
-    else:
-        #Thin down dictionary to only relevant months
-        days_in_month.pop('01')
-        days_in_month.pop('02')
-
-        new_days_in_month = {}
-        
-        for months in days_in_month:
-            if int(months) == int(month):
-                break
+        if year_ % 100 != 0:
+            return 29
+        else:
+            if year_ % 400 == 0:
+                return 29
             else:
-                new_days_in_month.update({months:days_in_month[months]})
-        days_to_doomsday += int(day) + sum([new_days_in_month[month] for month in new_days_in_month])
-        
-        print(days_to_doomsday)
-        return days_to_doomsday
-                
-def list_reshuffle(input_list,index):
-    pre_index, post_index = input_list[:index], input_list[index:]
-    #print(pre_index, post_index)
+                return 28
+
+def construct_day_order(anchor_index):
+    initial_days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+    pre_index, post_index = initial_days[:anchor_index], initial_days[anchor_index:]
     new_days_order = post_index+pre_index
     return new_days_order
-        
+    #days_of_week = {}
     
-            
-def day_from_days():
-    #I need to add logic to get the anchor day for the century
-    print(days_of_week[distance_from_doomday(day,month,year)%7])
-    #return days_of_week[distance_from_doomday(day,month,year)]%7
-                
-#Cases
-#Jan-Feb, non leap year. Passes
-#Jan-Feb, leap year
-#Mar-Dec, non leap year. Passes
-#Mar-Dec, leap year. Fails
-        
-        
-input_date = '12/12/2005'
+    #new_days = list_reshuffle(week_days,anchor_index)
+    #for i in range(7):
+    #    days_of_week.update({i:new_days[i]})
+    #return(days_of_week)
 
-day = input_date[:2]
-month = input_date[3:5]
-year = input_date[-4:]
-
-days_in_month = {"01":31,
-                 "02":this_doomsday(year)[:2],
-                 "03":30,
+def distance_from_doomsday(day,month,year):
+    days_in_month = {"01":31,
+                 "02":check_leap_year_correction(year),
+                 "03":31,
                  "04":30,
                  "05":31,
                  "06":30,
@@ -132,31 +52,91 @@ days_in_month = {"01":31,
                  "10":31,
                  "11":30,
                  "12":31}
-this_anchor_day = get_anchor_day(year)
-week_days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
-days_of_week = construct_days_of_week(this_anchor_day)
+
+    #Now I want to count the number of days between given date and last day of feb
+    #Get the sum of the number of days in the year
+    if days_in_month["02"] == 28:
+        days_of_year = 365
+    else:
+        days_of_year = 366
+
+    #Get the position of the last day of February in the days of the year
+    doomsday_position = days_in_month["01"] + days_in_month["02"]
+    #print(doomsday_position, get_this_years_doomsday(year))
+
+    #Get the order of days with this years Doomsday as day 0
+    this_years_doomsday_index = get_this_years_doomsday(year)
+    this_years_day_order = construct_day_order(this_years_doomsday_index)
+   
+    #Get the numerical position of the given day with the doomsday
+    given_day_position = 0
+    if (month != '01') and (month != '02'):
+        for item in days_in_month:
+            if item == month:
+                break
+            else:
+                given_day_position += days_in_month[item]
+        given_day_position += int(day)
+    elif month == '01':
+        given_day_position += int(day)
+    elif month == '02':
+        given_day_position += int(day) + days_in_month['01']
+
+    dist_to_doomsday = given_day_position-doomsday_position
+
+    #print(dist_to_doomsday)
+    #print("Doomsday is " + str(this_years_doomsday_index))
+    #print("This years day ordering is: ")
+    #print(this_years_day_order)
+    #print("The desried day's position is: " + str(given_day_position))
+    #print("Doomsday's position is: "+ str(doomsday_position))
+    #print("Distance to Doomsday is: " + str(dist_to_doomsday))
+
+    #Why isn't the line below sufficient?
+    #print(this_years_day_order[given_day_position%7])
+    #print(this_years_day_order[dist_to_doomsday%7])
+    return this_years_day_order[dist_to_doomsday%7]
 
 
-    
-#print(distance_from_doomday(day,month,year))
 
 
-##for days in days_in_month:
-##    print(days)
+input_date = '01/01/2004'
+
+day = input_date[:2]
+month = input_date[3:5]
+year = input_date[-4:]
+
+
+#print(distance_from_doomsday(day,month,year))
+#distance_from_doomsday(day,month,year)
+#Test the anchor day function
 #print(get_anchor_day(year))
 
-##new_days = {}
-##for days in days_in_month:
-##    if days != '01' and int(days) < int("11"):
-##        new_days.update({days:days_in_month[days]})
-##print(new_days)
-
-#print([days_in_month[days] for days in days_in_month)
-
-day_from_days()
-
-#Issue seems to be something to do with how it is calculating the day of the week
-#based off the days between the given date and doomsday
+####################################
+#Could be that dates in Jan or Feb are the issue
+#Could be a leap year issue. The gap from Jan to the end of Feb is different than the same day in March
+#Why? Because to go from 01/03/2004 you take 1 step back, its agnostic to leap years
+#unlike Jan and Feb
+####################################
 
 
-
+#Test cases
+tests = [('01/01/1900','Monday'),
+         ('23/02/1904','Tuesday'),
+         ('10/04/1921','Sunday'),
+         ('31/12/2004','Friday'),
+         ('14/04/1948','Wednesday'),
+         ('27/08/2098','Wednesday'),
+         ('27/02/2000','Sunday'),
+         ('19/01/1992','Sunday'),
+         ('03/02/1899','Friday'),
+         ('05/08/1897','Thursday')]
+for test in tests:
+    input_date = test[0]
+    day = input_date[:2]
+    month = input_date[3:5]
+    year = input_date[-4:]
+    if test[1] == distance_from_doomsday(day,month,year):
+        print("Correct")
+    else:
+        print("Incorrect")
